@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Passwortcheck</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="card">
+      <h1>Passwortcheck</h1>
+      <p class="subtitle">Gib ein Passwort ein, um seine Stärke zu prüfen. Hier wird dein Passwort nicht ins Internet gesendet, die Prüfung läuft komplett in deinem Browser.</p>
+
+      <div class="password-input-group">
+        <label for="password">Passwort</label>
+        <div class="input-wrapper" id="input-wrapper" hidden>
+          <input type="password" id="password" autocomplete="new-password" placeholder="Passwort eingeben" maxlength="40" />
+          <button type="button" id="toggle-visibility" class="toggle-visibility" aria-label="Passwort anzeigen">👁</button>
+        </div>
+        <div class="loading-spinner" id="password-loading" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="loading-text">Wörterbücher werden geladen…</span>
+        </div>
+        <div class="crack-time">
+          Geschätzte Zeit zum Knacken: <strong id="crack-time-value">---</strong>
+        </div>
+        <div class="strength-bar">
+          <div id="strength-fill" class="strength-fill"></div>
+        </div>
+        <div class="score-label-wrapper">
+          <span id="score-label" class="score-label"></span>
+          <span id="computing-spinner" class="spinner" hidden></span>
+        </div>
+        <a href="#info-card" class="crack-time-info-link">Wie wird das berechnet?</a>
+      </div>
+
+      <div id="feedback-details-wrapper" class="feedback" hidden>
+        <div id="feedback-warning" class="warning" hidden></div>
+        <ul id="feedback-suggestions" class="suggestions" hidden></ul>
+      </div>
+      <div id="no-issues-disclaimer" class="disclaimer" hidden>
+        <p>Achtung: Dieses Tool hat kein Problem mit dem Passwort gefunden. Aber das ist keine Garantie, dass es sicher ist:</p>
+        <ul>
+          <li>Häufige Wörter oder Namen in deiner Sprache sind leicht zu erraten, außer du verwendest mehrere Wörter</li>
+          <li>Verwende eine Google-Suche, um die am häufigsten verwendeten Passwörter in deiner Sprache zu finden</li>
+          <li>Verwende nie ein Passwort mehrmals, vor allem nicht das deines E-Mail-Accounts</li>
+          <li>Prüfe auf <a href="https://haveibeenpwned.com">haveibeenpwned.com</a>, ob deine Anmeldedaten in einem Datenleck gestohlen wurden</li>
+          <li>Überlege, einen Passwort-Manager zu verwenden, der Zufalls-Passwörter erzeugen kann</li>
+          <li>Überprüfe deine Online-Konten, ob <a href="https://www.bsi.bund.de/DE/Themen/Verbraucherinnen-und-Verbraucher/Informationen-und-Empfehlungen/Cyber-Sicherheitsempfehlungen/Accountschutz/Zwei-Faktor-Authentisierung/zwei-faktor-authentisierung_node.html">2-Faktor-Authentifizierung</a> angeboten wird, dann aktiviere sie</li>
+        </ul>
+      </div>
+      <div id="hashing-toggle-container" class="hashing-toggle">
+        <span class="hashing-toggle-label">Die Webseite verwendet:</span>
+        <span class="toggle-switch-wrapper">
+          <span id="modern-option" class="toggle-option">moderne Technik</span>
+          <button type="button" id="hashing-toggle" class="toggle-switch" role="switch" aria-checked="false" aria-label="Zwischen moderner und veralteter Hashing-Technik wechseln">
+            <span class="toggle-switch-knob"></span>
+          </button>
+          <span id="legacy-option" class="toggle-option">veraltete Technik</span>
+        </span>
+      </div>
+    </main>
+
+    <section id="info-card" class="card info-card">
+      <h2>Was zeigt diese Webseite?</h2>
+      <p>
+        Stell dir vor, die Webseite, auf der du ein Passwort verwendest, hat ein
+        Datenleck. Ein Krimineller erbeutet eine Liste mit verschlüsselten Passwörtern
+        und versucht nun, dein Passwort zu erraten.
+      </p>
+      <p>
+        Ein Computer kann dabei nicht unendlich schnell raten. 
+        Die angezeigte Zeit ist die Schätzung, wie lange es dauern würde, dein Passwort zu erraten.
+        Denn Hacker prüfen zuerst naheliegende Dinge wie ganze Wörter, Namen oder bekannte 
+        Zeichenfolgen wie "123456", nicht nur wahllose Buchstaben.
+      </p>
+      <p>
+        Dazu verwenden wir einen Algorithmus (<a href="https://github.com/zxcvbn-ts/zxcvbn-ts" target="_blank" rel="noopener noreferrer">zxcvbn-ts</a>), 
+        der ähnlich arbeitet, wie ein echter Passwort-Knacker (Cracker) vorgehen würde.
+        Er gleicht das eingegebene Passwort mit über 40.000 gängigen Passwörtern, Vornamen, Nachnamen und häufigen Wörtern aus Wikipedia und verschiedenen Sprachen ab.
+        Zusätzlich erkennt er typische Muster wie Datumsangaben, Wiederholungen (z. B. "aaa"), Zeichenfolgen (z. B. "abcd"), Tastatur-Muster (z. B. "qwertyuiop") sowie l33t-Speak-Ersetzungen (z. B. "P@ssw0rd").
+      </p>
+      <p>
+        Aus diesen erkannten Bausteinen schätzt der Algorithmus die Zeit ab, die ein Angreifer bräuchte, um das Passwort zu erraten, und leitet daraus eine Bewertung von 1 (sehr schwach) bis 5 (sehr stark) ab.
+        Dadurch werden auch scheinbar komplexe, aber leicht zu erratende Passwörter wie "P@ssword1" korrekt als unsicher erkannt, während unübliche Passphrasen ohne Sonderzeichen als stark eingestuft werden können.
+      </p>
+      <details>
+        <summary>
+              <strong>Technische Annahmen</strong>
+        </summary>
+        <ul>
+          <li> Wenn die Webseite <strong>veraltete Technik</strong> zum Passwort-Schutz verwendet, schafft ein Hacker bis zu 10 Milliarden Versuche pro Sekunde.</li>
+          <li> Wenn die Webseite <strong>moderne Technik</strong> zum Passwort-Schutz verwendet, schafft ein Hacker etwa 10.000 Versuche pro Sekunde.</li>
+        </ul>
+       <ul>
+        <li>Veraltete Technik: Passwort wird ungebremst gehasht, z. B. mit MD5 oder einfachem SHA-256/SHA-1. Der Angreifer verwendet GPUs</li>
+        <li>Moderne Technik: Passwort wird mit einer absichtlich langsamen Schlüsselableitungs-Funktion gehasht, z. B. bcrypt, scrypt, PBKDF2 oder Argon2.</li>
+       </ul>
+      Schritte des Farbbalkens basieren auf erwarteter Zeit zum Entschlüsseln:<br />
+      Sehr schwach: &lt;0.1s | Schwach: &lt;100s | Mittel: &lt;10.000s (2,7h) | Stark: &lt;1.000.000s (11,5d) | Sehr stark: ≥1.000.000s
+      </p>
+      </details>
+      
+    </section>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
